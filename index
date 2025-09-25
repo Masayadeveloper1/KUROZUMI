@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>業務支援アプリ - 起動中</title>
+  <base target="_top">
+  <?!= include('style.html') ?>
+  <style>
+    .splash {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: linear-gradient(to right, #dbeafe, #eff6ff);
+      color: #1e3a8a;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .splash h1 {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+
+    .splash p {
+      font-size: 16px;
+      color: #475569;
+    }
+  </style>
+</head>
+<body>
+  <div class="splash">
+    <h1>📊 業務支援アプリ</h1>
+    <p>読み込み中です…</p>
+  </div>
+
+  <script>
+    setTimeout(() => {
+      window.location.href = "?page=Start";
+    }, 1200); // 1.2秒後にStartへ遷移
+  </script>
+</body>
+</html>
+<?!= include('gpt-helper.html') ?>
+<script>
+  function handleError(error) {
+    const context = "[Client]";
+    const msg = error && error.message ? error.message : "❌ 未知のエラーが発生しました";
+    console.error(`${context} ❌ ${msg}`);
+    alert("エラーが発生しました:\n" + msg);
+  }
+</script>
+google.script.run
+  .withFailureHandler(handleError)
+  .submitGenericForm(data, "MST_Staff");

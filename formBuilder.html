@@ -1,0 +1,81 @@
+<!-- 汎用フォームテンプレート -->
+<script>
+  function buildForm(config, onSubmitCallbackName) {
+    const form = document.createElement("form");
+    form.id = "dynamicForm";
+
+    config.forEach(field => {
+      const div = document.createElement("div");
+      div.className = "form-group";
+
+      const label = document.createElement("label");
+      label.innerHTML = `${field.label} <span class="tooltip" title="${field.tooltip}">🛈</span>`;
+      div.appendChild(label);
+
+      let input;
+      if (field.type === "textarea") {
+        input = document.createElement("textarea");
+        input.rows = 3;
+      } else {
+        input = document.createElement("input");
+        input.type = field.type || "text";
+      }
+      input.name = field.name;
+      input.required = !!field.required;
+      div.appendChild(input);
+      form.appendChild(div);
+    });
+
+    const submit = document.createElement("button");
+    submit.type = "submit";
+    submit.textContent = "📤 登録する";
+    form.appendChild(submit);
+
+    form.onsubmit = function (e) {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(form).entries());
+      google.script.run
+        .withSuccessHandler(() => {
+          alert("✅ 登録完了");
+          form.reset();
+          window[onSubmitCallbackName]?.(); // 再読み込みなど
+        })
+        .withFailureHandler(err => alert("❌ エラー: " + err.message))
+        .submitGenericForm(data, CURRENT_SHEET);
+    };
+
+    return form;
+  }
+</script>
+// 追加：セレクト or テキスト or テキストエリアの処理
+if (field.type === "select") {
+  input = document.createElement("select");
+  (field.options || []).forEach(opt => {
+    const option = document.createElement("option");
+    option.value = opt;
+    option.textContent = opt;
+    input.appendChild(option);
+  });
+} else if (field.type === "textarea") {
+  input = document.createElement("textarea");
+  input.rows = 3;
+} else {
+  input = document.createElement("input");
+  input.type = field.type || "text";
+}
+if (field.readonly) {
+  input.readOnly = true;
+  input.style.backgroundColor = "#f9fafb";
+}
+<?!= include('gpt-helper.html') ?>
+<script>
+  function handleError(error) {
+    const context = "[Client]";
+    const msg = error && error.message ? error.message : "❌ 未知のエラーが発生しました";
+    console.error(`${context} ❌ ${msg}`);
+    alert("エラーが発生しました:\n" + msg);
+  }
+</script>
+google.script.run
+  .withFailureHandler(handleError)
+  .submitGenericForm(data, "MST_Staff");

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <base target="_top">
+  <title>顧客管理</title>
+  <?!= include('style.html') ?>
+  <?!= include('components/formBuilder.html') ?>
+  <?!= include('components/tableBuilder.html') ?>
+</head>
+<body>
+  <div class="container">
+    <h1>👤 顧客管理</h1>
+
+    <div id="form-area"></div>
+    <hr>
+    <h2>📋 一覧</h2>
+    <div id="table-area"></div>
+  </div>
+
+  <script>
+    const CURRENT_SHEET = "MST_Customer";
+
+    const formConfig = [
+      { name: "name", label: "氏名", tooltip: "顧客のフルネームを入力", required: true },
+      { name: "phone", label: "電話番号", tooltip: "顧客の電話番号（ハイフンなし）" },
+      { name: "email", label: "メール", tooltip: "メールアドレス" },
+      { name: "lastVisit", label: "来店日", tooltip: "最後の来店日（例：2024-09-20）", type: "date" },
+      { name: "note", label: "メモ", tooltip: "備考や接客メモなど" }
+    ];
+
+    function render() {
+      const form = buildForm(formConfig, "render");
+      document.getElementById("form-area").innerHTML = "";
+      document.getElementById("form-area").appendChild(form);
+
+      google.script.run.withSuccessHandler(data => {
+        const table = buildTable(
+          formConfig.map(f => f.label),
+          data,
+          "render"
+        );
+        const area = document.getElementById("table-area");
+        area.innerHTML = "";
+        area.appendChild(table);
+      }).getGenericData(CURRENT_SHEET);
+    }
+
+    window.onload = render;
+  </script>
+</body>
+</html>
+<?!= include('gpt-helper.html') ?>
+<script>
+  function handleError(error) {
+    const context = "[Client]";
+    const msg = error && error.message ? error.message : "❌ 未知のエラーが発生しました";
+    console.error(`${context} ❌ ${msg}`);
+    alert("エラーが発生しました:\n" + msg);
+  }
+</script>
+google.script.run
+  .withFailureHandler(handleError)
+  .submitGenericForm(data, "MST_Staff");

@@ -1,0 +1,61 @@
+<!-- 汎用テーブルテンプレート -->
+<script>
+  function buildTable(headers, data, onDeleteCallbackName) {
+    const table = document.createElement("table");
+    table.id = "genericTable";
+
+    const thead = document.createElement("thead");
+    const trHead = document.createElement("tr");
+    headers.forEach(h => {
+      const th = document.createElement("th");
+      th.textContent = h;
+      trHead.appendChild(th);
+    });
+    const thAction = document.createElement("th");
+    thAction.textContent = "操作";
+    trHead.appendChild(thAction);
+    thead.appendChild(trHead);
+    table.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+    data.forEach((row, i) => {
+      const tr = document.createElement("tr");
+      row.forEach(cell => {
+        const td = document.createElement("td");
+        td.textContent = cell;
+        tr.appendChild(td);
+      });
+
+      const tdDelete = document.createElement("td");
+      const btn = document.createElement("button");
+      btn.textContent = "🗑️";
+      btn.onclick = () => {
+        if (confirm("この行を削除しますか？")) {
+          google.script.run
+            .withSuccessHandler(() => window[onDeleteCallbackName]?.())
+            .deleteGenericRow(i + 2, CURRENT_SHEET);
+        }
+      };
+      btn.className = "danger";
+      tdDelete.appendChild(btn);
+      tr.appendChild(tdDelete);
+
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+
+    return table;
+  }
+</script>
+<?!= include('gpt-helper.html') ?>
+<script>
+  function handleError(error) {
+    const context = "[Client]";
+    const msg = error && error.message ? error.message : "❌ 未知のエラーが発生しました";
+    console.error(`${context} ❌ ${msg}`);
+    alert("エラーが発生しました:\n" + msg);
+  }
+</script>
+google.script.run
+  .withFailureHandler(handleError)
+  .submitGenericForm(data, "MST_Staff");

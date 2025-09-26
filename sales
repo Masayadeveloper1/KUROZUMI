@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <base target="_top">
+  <title>売上管理</title>
+  <?!= include('style.html') ?>
+  <?!= include('components/formBuilder.html') ?>
+  <?!= include('components/tableBuilder.html') ?>
+</head>
+<body>
+  <div class="container">
+    <h1>📈 売上管理</h1>
+
+    <div id="form-area"></div>
+    <hr>
+    <h2>📋 一覧</h2>
+    <div id="table-area"></div>
+  </div>
+
+  <script>
+    const CURRENT_SHEET = "TRN_Sales";
+
+    const formConfig = [
+      { name: "saleDate", label: "販売日", tooltip: "売上が発生した日付", type: "date", required: true },
+      { name: "productCode", label: "商品コード", tooltip: "商品の識別コード", required: true },
+      { name: "productName", label: "商品名", tooltip: "商品名（手入力）", required: true },
+      { name: "unitPrice", label: "単価（円）", tooltip: "1個あたりの価格", type: "number", required: true },
+      { name: "quantity", label: "数量", tooltip: "購入個数", type: "number", required: true },
+      { name: "total", label: "合計金額", tooltip: "単価 × 数量（自動計算）", type: "number", readonly: true },
+      { name: "paymentMethod", label: "支払方法", tooltip: "支払手段を選択", type: "select", options: ["現金", "クレジット", "電子マネー"], required: true },
+      { name: "note", label: "備考", tooltip: "特記事項があれば", type: "textarea" }
+    ];
+
+    function render() {
+      const form = buildForm(formConfig, "render");
+      document.getElementById("form-area").innerHTML = "";
+      document.getElementById("form-area").appendChild(form);
+
+      google.script.run.withSuccessHandler(data => {
+        const table = buildTable(
+          formConfig.map(f => f.label),
+          data,
+          "render"
+        );
+        document.getElementById("table-area").innerHTML = "";
+        document.getElementById("table-area").appendChild(table);
+      }).getGenericData(CURRENT_SHEET);
+
+      // リアルタイム合計計算ロジック
+      setTimeout(() => {
+        const priceInput = document.querySelector('input[name="unitPrice"]');
+        const qtyInput = document.querySelector('input[name="quantity"]');
+        const totalInput = document.querySelector('input[name="total"]');
+
+        const calc = () => {
+          const unit = parseFloat(priceInput.value) || 0;
+          const qty = parseFloat(qtyInput.value) || 0;
+          totalInput.value = unit * qty;
+        };
+
+        priceInput.addEventListener("input", calc);
+        qtyInput.addEventListener("input", calc);
+      }, 300);
+    }
+
+    window.onload = render;
+  </script>
+</body>
+</html>
+<?!= include('gpt-helper.html') ?>
+<script>
+  function handleError(error) {
+    const context = "[Client]";
+    const msg = error && error.message ? error.message : "❌ 未知のエラーが発生しました";
+    console.error(`${context} ❌ ${msg}`);
+    alert("エラーが発生しました:\n" + msg);
+  }
+</script>
+google.script.run
+  .withFailureHandler(handleError)
+  .submitGenericForm(data, "MST_Staff");

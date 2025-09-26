@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>カテゴリ選択</title>
+  <base target="_top">
+  <?!= include('style.html') ?>
+</head>
+<body>
+  <div class="container">
+    <h1>カテゴリ選択</h1>
+    <p>ここに各カテゴリの選択肢が表示されます（次フェーズで作成）</p>
+  </div>
+</body>
+</html>
+<style>
+  body {
+    font-family: "Segoe UI", sans-serif;
+    background: #f5f7fa;
+    color: #333;
+    margin: 0;
+    padding: 0;
+  }
+
+  .container {
+    max-width: 500px;
+    margin: 100px auto;
+    padding: 40px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    text-align: center;
+  }
+
+  h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+
+  button {
+    background: #2563eb;
+    color: white;
+    font-size: 16px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+
+  button:hover {
+    background: #1d4ed8;
+  }
+</style>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>カテゴリ選択</title>
+  <base target="_top">
+  <?!= include('style.html') ?>
+</head>
+<body>
+  <div class="container">
+    <h1>📂 カテゴリを選択してください</h1>
+    <div class="grid">
+      <button class="card" onclick="navigate('Sales')">📈 売上管理</button>
+      <button class="card" onclick="navigate('Customer')">👤 顧客管理</button>
+      <button class="card" onclick="navigate('Store')">🏪 店舗管理</button>
+      <button class="card" onclick="navigate('Production')">🏭 生産管理</button>
+      <button class="card" onclick="navigate('Payment')">💴 支払い管理</button>
+      <button class="card" onclick="navigate('Staff')">👥 スタッフ管理</button>
+    </div>
+  </div>
+
+  <script>
+    function navigate(pageName) {
+      window.location.href = `?page=${pageName}`;
+    }
+  </script>
+</body>
+</html>
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+  margin-top: 30px;
+}
+
+.card {
+  background: #ffffff;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+
+.card:hover {
+  background-color: #f0f4ff;
+  border-color: #3b82f6;
+  transform: translateY(-3px);
+}
+<button class="card" onclick="navigate('Customer')">👤 顧客管理</button>
+<button class="card" onclick="navigate('Sales')">📈 売上管理</button>
+<button class="card" onclick="navigate('Store')">🏪 店舗管理</button>
+<button class="card" onclick="navigate('Payment')">💴 支払い管理</button>
+<button class="card" onclick="navigate('Production')">🏭 生産管理</button>
+<?!= include('gpt-helper.html') ?>
+<script>
+  function handleError(error) {
+    const context = "[Client]";
+    const msg = error && error.message ? error.message : "❌ 未知のエラーが発生しました";
+    console.error(`${context} ❌ ${msg}`);
+    alert("エラーが発生しました:\n" + msg);
+  }
+</script>
+google.script.run
+  .withFailureHandler(handleError)
+  .submitGenericForm(data, "MST_Staff");

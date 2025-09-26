@@ -1,0 +1,254 @@
+<!-- 以下はフォーム送信と同一ページ内 -->
+<!-- Staff.html（省略部分は前フェーズの内容と同様） -->
+...
+  <div id="result" class="result"></div>
+
+  <hr style="margin: 40px 0;">
+
+  <h2>📋 登録済みスタッフ一覧</h2>
+  <table id="staffTable">
+    <thead>
+      <tr>
+        <th>氏名</th>
+        <th>所属</th>
+        <th>役職</th>
+        <th>電話番号</th>
+        <th>メール</th>
+        <th>入社日</th>
+        <th>メモ</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    // フォーム送信処理（前フェーズと同じ）
+    const form = document.getElementById('staffForm');
+    const result = document.getElementById('result');
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(form).entries());
+
+      google.script.run
+        .withSuccessHandler(() => {
+          result.innerHTML = `<span style="color: green;">✅ 登録が完了しました</span>`;
+          form.reset();
+          loadStaffList(); // 再読み込み
+        })
+        .withFailureHandler(err => {
+          result.innerHTML = `<span style="color: red;">❌ エラー: ${err.message}</span>`;
+        })
+        .submitStaffForm(data);
+    });
+
+    // 一覧表示処理
+    function loadStaffList() {
+      google.script.run.withSuccessHandler(renderStaffTable).getStaffList();
+    }
+
+    function renderStaffTable(data) {
+      const tbody = document.querySelector("#staffTable tbody");
+      tbody.innerHTML = '';
+
+      data.forEach((row, index) => {
+        const tr = document.createElement('tr');
+        row.forEach(cell => {
+          const td = document.createElement('td');
+          td.textContent = cell;
+          tr.appendChild(td);
+        });
+
+        // 削除ボタン追加
+        const td = document.createElement('td');
+        const btn = document.createElement('button');
+        btn.textContent = '🗑️ 削除';
+        btn.onclick = () => {
+          if (confirm("本当に削除しますか？")) {
+            google.script.run
+              .withSuccessHandler(() => loadStaffList())
+              .deleteStaffByIndex(index + 2); // ヘッダー行があるため+2
+          }
+        };
+        btn.className = 'danger';
+        td.appendChild(btn);
+        tr.appendChild(td);
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    // 初回読み込み
+    window.onload = () => {
+      loadStaffList();
+    };
+  </script>
+</body>
+</html>
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  font-size: 14px;
+}
+
+th, td {
+  padding: 10px;
+  border: 1px solid #d1d5db;
+  text-align: left;
+}
+
+th {
+  background-color: #f3f4f6;
+}
+
+button.danger {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button.danger:hover {
+  background: #dc2626;
+}
+<hr style="margin: 40px 0;">
+
+<h2>🧠 入力サポート（GPTに質問）</h2>
+<p>わからないことがあれば下記に入力して GPT に質問してください。</p>
+
+<div class="gpt-assist">
+  <input type="text" id="gpt-question" placeholder="例：役職って何を入力すればいい？">
+  <button onclick="askGPT()">質問する</button>
+</div>
+
+<div id="gpt-answer" class="gpt-answer">💬 回答がここに表示されます</div>
+
+<script>
+  function askGPT() {
+    const question = document.getElementById('gpt-question').value;
+    const answerBox = document.getElementById('gpt-answer');
+
+    if (!question.trim()) {
+      answerBox.innerHTML = "❗ 質問内容を入力してください";
+      return;
+    }
+
+    answerBox.innerHTML = "⏳ 回答を生成中です...";
+
+    google.script.run
+      .withSuccessHandler(res => {
+        answerBox.innerHTML = "💬 " + res;
+      })
+      .withFailureHandler(err => {
+        answerBox.innerHTML = "❌ エラー: " + err.message;
+      })
+      .askGPT(question);
+  }
+</script>
+.gpt-assist {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.gpt-assist input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.gpt-assist button {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.gpt-assist button:hover {
+  background: #2563eb;
+}
+
+.gpt-answer {
+  background: #f3f4f6;
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 16px;
+  font-size: 14px;
+  white-space: pre-wrap;
+}
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <base target="_top">
+  <title>スタッフ管理</title>
+  <?!= include('style.html') ?>
+  <?!= include('components/formBuilder.html') ?>
+  <?!= include('components/tableBuilder.html') ?>
+</head>
+<body>
+  <div class="container">
+    <h1>👥 スタッフ管理</h1>
+
+    <div id="form-area"></div>
+    <hr>
+    <h2>📋 一覧</h2>
+    <div id="table-area"></div>
+  </div>
+
+  <script>
+    const CURRENT_SHEET = "MST_Staff";
+
+    const formConfig = [
+      { name: "name", label: "氏名", tooltip: "スタッフの氏名", required: true },
+      { name: "department", label: "所属", tooltip: "店舗や部署名" },
+      { name: "position", label: "役職", tooltip: "担当の役職" },
+      { name: "phone", label: "電話番号", tooltip: "連絡先（ハイフンなし）" },
+      { name: "email", label: "メール", tooltip: "メールアドレス", type: "email" },
+      { name: "startDate", label: "入社日", tooltip: "勤務開始日", type: "date" },
+      { name: "note", label: "メモ", tooltip: "特記事項", type: "textarea" }
+    ];
+
+    function render() {
+      // フォーム描画
+      const form = buildForm(formConfig, "render");
+      document.getElementById("form-area").innerHTML = "";
+      document.getElementById("form-area").appendChild(form);
+
+      // 一覧表示
+      google.script.run.withSuccessHandler(data => {
+        const table = buildTable(
+          formConfig.map(f => f.label),
+          data,
+          "render"
+        );
+        const area = document.getElementById("table-area");
+        area.innerHTML = "";
+        area.appendChild(table);
+      }).getGenericData(CURRENT_SHEET);
+    }
+
+    window.onload = render;
+  </script>
+</body>
+</html>
+<?!= include('gpt-helper.html') ?>
+<script>
+  function handleError(error) {
+    const context = "[Client]";
+    const msg = error && error.message ? error.message : "❌ 未知のエラーが発生しました";
+    console.error(`${context} ❌ ${msg}`);
+    alert("エラーが発生しました:\n" + msg);
+  }
+</script>
+google.script.run
+  .withFailureHandler(handleError)
+  .submitGenericForm(data, "MST_Staff");

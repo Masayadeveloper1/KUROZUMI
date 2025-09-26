@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>ようこそ</title>
+  <base target="_top">
+  <?!= include('style.html') ?>
+</head>
+<body>
+  <div class="container">
+    <h1>🚀 ようこそ！</h1>
+    <p>ここから各種業務管理が始まります。</p>
+    <button onclick="goToMenu()">管理メニューへ進む</button>
+  </div>
+
+  <script>
+    function goToMenu() {
+      window.location.href = '?page=Menu';
+    }
+  </script>
+</body>
+</html>
+<style>
+  body {
+    font-family: "Segoe UI", sans-serif;
+    background: #f5f7fa;
+    color: #333;
+    margin: 0;
+    padding: 0;
+  }
+
+  .container {
+    max-width: 500px;
+    margin: 100px auto;
+    padding: 40px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    text-align: center;
+  }
+
+  h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+
+  button {
+    background: #2563eb;
+    color: white;
+    font-size: 16px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+
+  button:hover {
+    background: #1d4ed8;
+  }
+</style>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Start - 業務支援アプリ</title>
+  <base target="_top">
+  <?!= include('style.html') ?>
+</head>
+<body>
+  <div class="container center-screen fade-in">
+    <h1>🚀 業務支援アプリへようこそ！</h1>
+    <p>以下のボタンから業務カテゴリを選択できます。</p>
+    
+    <button onclick="goToMenu()">📂 管理メニューへ進む</button>
+    <div style="margin-top: 20px;">
+      <a href="https://docs.google.com/spreadsheets/d/1pJq2KT4WSfRIFdjGhZxm2m8aYfeq1g2KbUVLxPEL8TI/edit" target="_blank">📎 連携スプレッドシートを開く</a>
+    </div>
+  </div>
+
+  <script>
+    function goToMenu() {
+      window.location.href = "?page=Menu";
+    }
+  </script>
+</body>
+</html>
+<?!= include('gpt-helper.html') ?>
+<script>
+  function handleError(error) {
+    const context = "[Client]";
+    const msg = error && error.message ? error.message : "❌ 未知のエラーが発生しました";
+    console.error(`${context} ❌ ${msg}`);
+    alert("エラーが発生しました:\n" + msg);
+  }
+</script>
+google.script.run
+  .withFailureHandler(handleError)
+  .submitGenericForm(data, "MST_Staff");

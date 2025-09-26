@@ -1,0 +1,153 @@
+<!-- gpt-helper.html -->
+<style>
+  #gpt-helper {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 320px;
+    max-height: 500px;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    font-family: 'Segoe UI', sans-serif;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 9999;
+  }
+
+  #gpt-helper-header {
+    background: #3b82f6;
+    color: white;
+    padding: 10px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+
+  #gpt-messages {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+    font-size: 14px;
+  }
+
+  #gpt-input-area {
+    display: flex;
+    border-top: 1px solid #eee;
+  }
+
+  #gpt-input {
+    flex: 1;
+    border: none;
+    padding: 10px;
+    font-size: 14px;
+    outline: none;
+  }
+
+  #gpt-send {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 0 16px;
+    cursor: pointer;
+  }
+
+  #gpt-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #10b981;
+    color: white;
+    padding: 12px;
+    border-radius: 50%;
+    font-size: 20px;
+    border: none;
+    z-index: 9998;
+    cursor: pointer;
+  }
+
+  .gpt-message {
+    margin-bottom: 8px;
+  }
+
+  .gpt-message.user {
+    font-weight: bold;
+    color: #1e3a8a;
+  }
+
+  .gpt-message.assistant {
+    color: #111827;
+  }
+</style>
+
+<div id="gpt-helper">
+  <div id="gpt-helper-header" onclick="toggleGPT()">🤖 GPTヘルプ（クリックで閉じる）</div>
+  <div id="gpt-messages"></div>
+  <div id="gpt-input-area">
+    <input type="text" id="gpt-input" placeholder="質問を入力..." />
+    <button id="gpt-send" onclick="sendToGPT()">送信</button>
+  </div>
+</div>
+
+<button id="gpt-button" onclick="toggleGPT()">💬</button>
+
+<script>
+  function toggleGPT() {
+    const gpt = document.getElementById("gpt-helper");
+    gpt.style.display = gpt.style.display === "flex" ? "none" : "flex";
+  }
+
+  function sendToGPT() {
+    const input = document.getElementById("gpt-input");
+    const messages = document.getElementById("gpt-messages");
+    const userMessage = input.value.trim();
+    if (!userMessage) return;
+
+    appendMessage("user", userMessage);
+    input.value = "";
+    appendMessage("assistant", "Thinking...");
+
+    google.script.run
+      .withSuccessHandler(res => {
+        replaceLastMessage("assistant", res);
+      })
+      .withFailureHandler(err => {
+        replaceLastMessage("assistant", `❌ エラー: ${err.message}`);
+      })
+      .callGPT(userMessage);
+  }
+
+  function appendMessage(role, text) {
+    const div = document.createElement("div");
+    div.className = `gpt-message ${role}`;
+    div.textContent = text;
+    document.getElementById("gpt-messages").appendChild(div);
+    scrollToBottom();
+  }
+
+  function replaceLastMessage(role, newText) {
+    const messages = document.querySelectorAll(`.gpt-message.${role}`);
+    if (messages.length > 0) {
+      messages[messages.length - 1].textContent = newText;
+      scrollToBottom();
+    }
+  }
+
+  function scrollToBottom() {
+    const container = document.getElementById("gpt-messages");
+    container.scrollTop = container.scrollHeight;
+  }
+</script>
+<?!= include('gpt-helper.html') ?>
+<script>
+  function handleError(error) {
+    const context = "[Client]";
+    const msg = error && error.message ? error.message : "❌ 未知のエラーが発生しました";
+    console.error(`${context} ❌ ${msg}`);
+    alert("エラーが発生しました:\n" + msg);
+  }
+</script>
+google.script.run
+  .withFailureHandler(handleError)
+  .submitGenericForm(data, "MST_Staff");

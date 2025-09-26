@@ -1,0 +1,58 @@
+<!-- components.html -->
+<script>
+  // ツールチップ表示
+  function createTooltip(icon = "🛈", message = "") {
+    const span = document.createElement("span");
+    span.className = "tooltip";
+    span.title = message;
+    span.textContent = icon;
+    return span;
+  }
+
+  // ローディングスピナー表示
+  function showLoader(targetId = "loader", message = "読み込み中...") {
+    const target = document.getElementById(targetId);
+    if (!target) return;
+    target.innerHTML = `
+      <div class="loader-wrapper">
+        <div class="loader"></div>
+        <p>${message}</p>
+      </div>
+    `;
+  }
+
+  function hideLoader(targetId = "loader") {
+    const target = document.getElementById(targetId);
+    if (!target) return;
+    target.innerHTML = "";
+  }
+
+  // トースト通知（成功・エラー）
+  function showToast(message, type = "success") {
+    const toast = document.createElement("div");
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+      toast.classList.add("show");
+    }, 100);
+
+    setTimeout(() => {
+      toast.classList.remove("show");
+      setTimeout(() => document.body.removeChild(toast), 300);
+    }, 3000);
+  }
+</script>
+<?!= include('gpt-helper.html') ?>
+<script>
+  function handleError(error) {
+    const context = "[Client]";
+    const msg = error && error.message ? error.message : "❌ 未知のエラーが発生しました";
+    console.error(`${context} ❌ ${msg}`);
+    alert("エラーが発生しました:\n" + msg);
+  }
+</script>
+google.script.run
+  .withFailureHandler(handleError)
+  .submitGenericForm(data, "MST_Staff");

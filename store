@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <base target="_top">
+  <title>店舗管理</title>
+  <?!= include('style.html') ?>
+  <?!= include('components/formBuilder.html') ?>
+  <?!= include('components/tableBuilder.html') ?>
+</head>
+<body>
+  <div class="container">
+    <h1>🏪 店舗管理</h1>
+
+    <div id="form-area"></div>
+    <hr>
+    <h2>📋 一覧</h2>
+    <div id="table-area"></div>
+  </div>
+
+  <script>
+    const CURRENT_SHEET = "MST_Store";
+
+    const formConfig = [
+      { name: "storeCode", label: "店舗コード", tooltip: "一意のコード（例：ST001）", required: true },
+      { name: "storeName", label: "店舗名", tooltip: "店舗の正式名称", required: true },
+      { name: "location", label: "所在地", tooltip: "住所など" },
+      { name: "phone", label: "電話番号", tooltip: "店舗の電話番号" },
+      { name: "email", label: "メール", tooltip: "店舗用メールアドレス", type: "email" },
+      { name: "openDate", label: "開店日", tooltip: "店舗の営業開始日", type: "date" },
+      { name: "note", label: "備考", tooltip: "補足情報やメモ", type: "textarea" }
+    ];
+
+    function render() {
+      const form = buildForm(formConfig, "render");
+      document.getElementById("form-area").innerHTML = "";
+      document.getElementById("form-area").appendChild(form);
+
+      google.script.run.withSuccessHandler(data => {
+        const table = buildTable(
+          formConfig.map(f => f.label),
+          data,
+          "render"
+        );
+        document.getElementById("table-area").innerHTML = "";
+        document.getElementById("table-area").appendChild(table);
+      }).getGenericData(CURRENT_SHEET);
+    }
+
+    window.onload = render;
+  </script>
+</body>
+</html>
+<?!= include('gpt-helper.html') ?>
+<script>
+  function handleError(error) {
+    const context = "[Client]";
+    const msg = error && error.message ? error.message : "❌ 未知のエラーが発生しました";
+    console.error(`${context} ❌ ${msg}`);
+    alert("エラーが発生しました:\n" + msg);
+  }
+</script>
+google.script.run
+  .withFailureHandler(handleError)
+  .submitGenericForm(data, "MST_Staff");

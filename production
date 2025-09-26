@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <base target="_top">
+  <title>生産管理</title>
+  <?!= include('style.html') ?>
+  <?!= include('components/formBuilder.html') ?>
+  <?!= include('components/tableBuilder.html') ?>
+</head>
+<body>
+  <div class="container">
+    <h1>🏭 生産管理</h1>
+
+    <div id="form-area"></div>
+    <hr>
+    <h2>📋 一覧</h2>
+    <div id="table-area"></div>
+  </div>
+
+  <script>
+    const CURRENT_SHEET = "MST_Production";
+
+    const formConfig = [
+      { name: "productionId", label: "生産ID", tooltip: "一意のID（例：PRD001）", required: true },
+      { name: "productionDate", label: "生産日", tooltip: "生産日", type: "date", required: true },
+      { name: "productName", label: "製品名", tooltip: "生産された製品名", required: true },
+      { name: "quantity", label: "数量", tooltip: "生産数量", type: "number", required: true },
+      { name: "unit", label: "単位", tooltip: "単位（個、箱、kgなど）" },
+      { name: "responsible", label: "担当者", tooltip: "生産担当者名" },
+      { name: "note", label: "備考", tooltip: "特記事項", type: "textarea" }
+    ];
+
+    function render() {
+      const form = buildForm(formConfig, "render");
+      document.getElementById("form-area").innerHTML = "";
+      document.getElementById("form-area").appendChild(form);
+
+      google.script.run.withSuccessHandler(data => {
+        const table = buildTable(
+          formConfig.map(f => f.label),
+          data,
+          "render"
+        );
+        document.getElementById("table-area").innerHTML = "";
+        document.getElementById("table-area").appendChild(table);
+      }).getGenericData(CURRENT_SHEET);
+    }
+
+    window.onload = render;
+  </script>
+</body>
+</html>
+<?!= include('gpt-helper.html') ?>
+<script>
+  function handleError(error) {
+    const context = "[Client]";
+    const msg = error && error.message ? error.message : "❌ 未知のエラーが発生しました";
+    console.error(`${context} ❌ ${msg}`);
+    alert("エラーが発生しました:\n" + msg);
+  }
+</script>
+google.script.run
+  .withFailureHandler(handleError)
+  .submitGenericForm(data, "MST_Staff");
